@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinChat", "Src\WinChat\WinChat.csproj", "{F0CD0354-D1B1-47FF-AB16-4081AB379D0A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Src", "Src", "{A75786C3-773F-41B6-A06A-BBB85922095B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8A031FF2-A7C3-472B-9160-810E951BFD80}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinChat.Infrastructure", "Src\WinChat.Infrastructure\WinChat.Infrastructure.csproj", "{3C737BA3-4624-4E60-A257-080BCC43CDB0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A} = {A75786C3-773F-41B6-A06A-BBB85922095B}
+		{3C737BA3-4624-4E60-A257-080BCC43CDB0} = {A75786C3-773F-41B6-A06A-BBB85922095B}
+	EndGlobalSection
+EndGlobal
