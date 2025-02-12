@@ -7,9 +7,80 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         DataContext="{x:Static local:ViewModelLocator.Main}">
-    <StackPanel>
-        <TextBlock Text="Welcome"/>
-        <Button Command="{Binding TestApiCommand}" Content="Test API"/>
-        <TextBlock Text="{Binding Response}"/>
-    </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <!--<TextBlock Text="{Binding Response}"
+           TextWrapping="Wrap"
+           Padding="10"
+           Margin="5"
+           Foreground="Black"
+           FontSize="14"
+           HorizontalAlignment="Left"/>-->
+
+        <!--<ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ChatMessages}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="LightGray"
+                        Padding="10"
+                        CornerRadius="10"
+                        Margin="5"
+                        MaxWidth="300">
+                            <TextBlock Text="{Binding Content}"
+                               TextWrapping="Wrap"
+                               Foreground="Black"
+                               FontSize="14"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>-->
+
+        <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding ChatMessages}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="10"
+                        CornerRadius="10"
+                        Margin="5"
+                        MaxWidth="300">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="LightGray"/>
+                                    <!-- Default for Assistant -->
+                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                                    <!-- Default alignment -->
+
+                                    <Style.Triggers>
+                                        <!-- If Role is 'User', change background and alignment -->
+                                        <DataTrigger Binding="{Binding Role}" Value="User">
+                                            <Setter Property="Background" Value="LightBlue"/>
+                                            <Setter Property="HorizontalAlignment" Value="Right"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <TextBlock Text="{Binding Content}"
+                               TextWrapping="Wrap"
+                               Foreground="Black"
+                               FontSize="14"/>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+
+
+        <StackPanel Grid.Row="2" >
+            <TextBox Text="{Binding UserMessage, Mode=TwoWay}"/>
+            <Button Command="{Binding TestApiCommand}" Content="Send message"/>
+        </StackPanel>
+    </Grid>
 </Window>

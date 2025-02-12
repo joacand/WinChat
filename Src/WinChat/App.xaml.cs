@@ -44,7 +44,6 @@ public partial class App : Application
         services.AddTransient<MainWindowViewModel>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);
 
-
         var dbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db");
         if (!Directory.Exists(dbFolder))
         {

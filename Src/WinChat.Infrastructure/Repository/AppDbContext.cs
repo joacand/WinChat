@@ -2,16 +2,8 @@
 
 namespace WinChat.Infrastructure.Repository;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<ApplicationData> ApplicationData { get; set; }
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    { }
-}
-
-public class ApplicationData
-{
-    public string Id { get; set; }
-    public string Name { get; set; }
-    public string Value { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 }
