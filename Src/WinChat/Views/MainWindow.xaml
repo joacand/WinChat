@@ -4,9 +4,12 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinChat"
+        xmlns:vms="clr-namespace:WinChat.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
-        DataContext="{x:Static local:ViewModelLocator.Main}">
+        Title="WinChat" Height="1000" Width="800"
+        DataContext="{x:Static local:ViewModelLocator.Main}"
+        Background="{Binding BackgroundColor}"
+        Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -14,73 +17,64 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
-        <!--<TextBlock Text="{Binding Response}"
-           TextWrapping="Wrap"
-           Padding="10"
-           Margin="5"
-           Foreground="Black"
-           FontSize="14"
-           HorizontalAlignment="Left"/>-->
-
-        <!--<ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" Margin="10">
             <ItemsControl ItemsSource="{Binding ChatMessages}">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Background="LightGray"
-                        Padding="10"
-                        CornerRadius="10"
-                        Margin="5"
-                        MaxWidth="300">
-                            <TextBlock Text="{Binding Content}"
-                               TextWrapping="Wrap"
-                               Foreground="Black"
-                               FontSize="14"/>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>-->
-
-        <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto">
-            <ItemsControl ItemsSource="{Binding ChatMessages}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Padding="10"
-                        CornerRadius="10"
-                        Margin="5"
-                        MaxWidth="300">
+                            CornerRadius="10"
+                            Margin="5"
+                            MaxWidth="500">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="LightGray"/>
-                                    <!-- Default for Assistant -->
+                                    <Setter Property="Background" Value="{Binding Path=DataContext.AssistantChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
                                     <Setter Property="HorizontalAlignment" Value="Left"/>
-                                    <!-- Default alignment -->
 
                                     <Style.Triggers>
-                                        <!-- If Role is 'User', change background and alignment -->
                                         <DataTrigger Binding="{Binding Role}" Value="User">
-                                            <Setter Property="Background" Value="LightBlue"/>
+                                            <Setter Property="Background" Value="{Binding Path=DataContext.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
                                             <Setter Property="HorizontalAlignment" Value="Right"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
 
-                            <TextBlock Text="{Binding Content}"
+                            <TextBox Text="{Binding Content}"
                                TextWrapping="Wrap"
                                Foreground="Black"
-                               FontSize="14"/>
+                               FontSize="14" 
+                               IsReadOnly="True"
+                               Background="Transparent"
+                               BorderBrush="Transparent"
+                               HorizontalContentAlignment="Left">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="Background" Value="Transparent" />
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollViewer>
 
-
-
-        <StackPanel Grid.Row="2" >
-            <TextBox Text="{Binding UserMessage, Mode=TwoWay}"/>
-            <Button Command="{Binding TestApiCommand}" Content="Send message"/>
-        </StackPanel>
+        <Grid Grid.Row="2" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBox Name="ChatTextBox" Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0" Padding="10"
+                     FontSize="14" Background="GhostWhite" KeyDown="TextBox_KeyDown" />
+            <Button Grid.Column="1" Command="{Binding SendChatCommand}" Content="Send message" Padding="10"/>
+        </Grid>
     </Grid>
 </Window>

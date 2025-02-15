@@ -99,6 +99,7 @@ public sealed class AiPromptService : BackgroundService
                 .Take(20)
                 .AsEnumerable()
                 .Select(FormatChatMessage)
+                .Reverse()
                 .ToList();
 
             var address = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={ApiKey}";
@@ -158,7 +159,7 @@ public sealed class AiPromptService : BackgroundService
         return string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
     }
 
-    private string FormatChatMessage(ChatMessage message, int _)
+    private string FormatChatMessage(ChatMessageContent message, int _)
     {
         return JsonSerializer.Serialize(message, SerializerOptions);
     }
