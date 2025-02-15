@@ -8,7 +8,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
         (DataContext as MainWindowViewModel)!.NewMessageAdded += ViewModel_NewMessageAdded;
     }
 

@@ -42,6 +42,7 @@ public partial class App : Application
         services.AddSingleton(_configuration);
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<ColorSettings>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);
 
         var dbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db");
