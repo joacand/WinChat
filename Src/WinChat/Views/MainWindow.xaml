@@ -14,62 +14,6 @@
         Background="{Binding ColorSettings.BackgroundColor}"
         Foreground="{Binding ColorSettings.ForegroundColor}"
         Loaded="Window_Loaded">
-    <Window.Resources>
-        <Style TargetType="Button">
-            <Setter Property="Padding" Value="16 8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" 
-                                CornerRadius="6"
-                                Background="{TemplateBinding Background}"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter x:Name="contentPresenter"
-                                  ContentTemplate="{TemplateBinding ContentTemplate}"
-                                  Content="{TemplateBinding Content}"
-                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                                  Margin="{TemplateBinding Padding}"
-                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                  RecognizesAccessKey="True"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="6"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="border" 
-                                CornerRadius="6"
-                                Background="{TemplateBinding Background}">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                      Margin="{TemplateBinding Padding}"
-                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <converters:AlignmentConverter x:Key="AlignmentConverter"/>
-    </Window.Resources>
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -85,11 +29,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button
                     Command="{Binding ClearChatHistoryCommand}" 
-                    Content="🧹 Clear chat history" 
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
-                    Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                    Content="🧹 Clear chat history"/>
             </StackPanel>
         </Grid>
 
@@ -128,22 +68,10 @@
                                 </Border.Style>
 
                                 <TextBox Text="{Binding Content}"
-                               TextWrapping="Wrap"
-                               Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"
-                               FontSize="16" 
-                               FontFamily="Segoe UI"
-                               IsReadOnly="True"
-                               Background="Transparent"
-                               BorderBrush="Transparent"
-                               HorizontalContentAlignment="Left">
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                            <Setter Property="BorderBrush" Value="Transparent" />
-                                            <Setter Property="BorderThickness" Value="0" />
-                                            <Setter Property="Background" Value="Transparent" />
-                                        </Style>
-                                    </TextBox.Style>
+                                         Background="Transparent"
+                                         BorderBrush="Transparent"
+                                         IsReadOnly="True"
+                                         HorizontalContentAlignment="Left">
                                 </TextBox>
                             </Border>
                         </DataTemplate>
@@ -159,19 +87,13 @@
 
                 <TextBox Name="ChatTextBox" 
                      Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                     Margin="0 0,10,0" 
-                     FontSize="16"
-                     KeyDown="TextBox_KeyDown"
-                     Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
-                     Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                     Margin="0,0,10,0" 
+                     KeyDown="TextBox_KeyDown"/>
 
                 <Button Grid.Column="1" 
                     Command="{Binding SendChatCommand}" 
                     Content="Send" 
-                    FontSize="16"
-                    FontWeight="SemiBold"
-                    Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
-                    Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+                    FontWeight="SemiBold"/>
             </Grid>
         </Grid>
     </Grid>
