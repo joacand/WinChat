@@ -7,7 +7,7 @@ namespace WinChat.UnitTests;
 
 public class ColorSettingsTests
 {
-    private ColorSettings CreateSut() => new(NullLogger<ColorSettings>.Instance);
+    private static ColorSettings CreateSut() => new(NullLogger<ColorSettings>.Instance);
 
     [Fact]
     public void Constructor_WhenCalled_ShouldApplyDefaultDarkTheme()

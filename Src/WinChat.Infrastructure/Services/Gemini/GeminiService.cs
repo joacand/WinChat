@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +7,7 @@ using WinChat.Infrastructure.Services.Contracts;
 
 namespace WinChat.Infrastructure.Services.Gemini;
 
-internal sealed class GeminiService(IServiceScopeFactory scopeFactory, ILogger<GeminiService> logger) : IGenerateTextService
+internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGenerateTextService
 {
     private static readonly HttpClient _httpClient = new()
     {
