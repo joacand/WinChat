@@ -2,10 +2,11 @@
 using System.IO;
 using System.Windows;
 using WinChat.Infrastructure;
+using WinChat.Views;
 
 namespace WinChat.Services;
 
-internal static class CommandLineCommandService
+internal static class CommandLineService
 {
     public static string ProcessCommands(string text)
     {
@@ -27,9 +28,10 @@ internal static class CommandLineCommandService
             var args = new string([.. parts[1].TakeWhile(x => x != '}')]);
             if (args.Length == 0) continue;
 
-            var userResult = MessageBox.Show("The assistant wants to send the following command, do you want to proceed?" +
-                $"{Environment.NewLine}{Environment.NewLine}{args}", "Confirmation", MessageBoxButton.OKCancel, MessageBoxImage.Question);
-            if (userResult != MessageBoxResult.OK)
+            var userResult = ConfirmationDialog.Show($"The assistant wants to send the following command, do you want to proceed?",
+                args, "Confirmation");
+
+            if (userResult != true)
             {
                 return $"⚠️ Command '{args}' aborted by user ⚠️";
             }

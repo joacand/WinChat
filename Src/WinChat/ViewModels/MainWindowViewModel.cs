@@ -123,7 +123,7 @@ internal partial class MainWindowViewModel : ObservableObject
         try
         {
             var modifiedText = _colorSettings.ProcessColorCommands(text);
-            modifiedText = CommandLineCommandService.ProcessCommands(modifiedText);
+            modifiedText = CommandLineService.ProcessCommands(modifiedText);
             return modifiedText;
         }
         catch (Exception ex)
