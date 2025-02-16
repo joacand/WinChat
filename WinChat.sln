@@ -11,6 +11,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{8A031FF2-A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinChat.Infrastructure", "Src\WinChat.Infrastructure\WinChat.Infrastructure.csproj", "{3C737BA3-4624-4E60-A257-080BCC43CDB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinChat.UnitTests", "Test\WinChat.UnitTests\WinChat.UnitTests.csproj", "{6163BD5F-4978-4C1F-A8F7-7B5468E7606C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C737BA3-4624-4E60-A257-080BCC43CDB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6163BD5F-4978-4C1F-A8F7-7B5468E7606C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6163BD5F-4978-4C1F-A8F7-7B5468E7606C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6163BD5F-4978-4C1F-A8F7-7B5468E7606C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6163BD5F-4978-4C1F-A8F7-7B5468E7606C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,5 +38,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F0CD0354-D1B1-47FF-AB16-4081AB379D0A} = {A75786C3-773F-41B6-A06A-BBB85922095B}
 		{3C737BA3-4624-4E60-A257-080BCC43CDB0} = {A75786C3-773F-41B6-A06A-BBB85922095B}
+		{6163BD5F-4978-4C1F-A8F7-7B5468E7606C} = {8A031FF2-A7C3-472B-9160-810E951BFD80}
 	EndGlobalSection
 EndGlobal
