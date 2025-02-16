@@ -9,6 +9,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         (DataContext as MainWindowViewModel)!.NewMessageAdded += ViewModel_NewMessageAdded;
+        ViewModel_NewMessageAdded();
     }
 
     private void ViewModel_NewMessageAdded()
@@ -19,7 +20,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void TextBox_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+    private void TextBox_KeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
         {

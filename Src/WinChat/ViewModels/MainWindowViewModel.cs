@@ -44,8 +44,8 @@ internal partial class MainWindowViewModel : ObservableObject
         _soundService = soundService;
         _logger = logger;
 
-        LoadHistory();
         StartReadingChannel();
+        LoadHistory();
 
         _logger.LogInformation("MainWindowViewModel initalized");
     }
@@ -59,10 +59,17 @@ internal partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    [RelayCommand]
+    public async Task ClearChatHistory()
+    {
+        await ClearChat();
+        ChatMessages.Clear();
+    }
+
     /// <summary>
-    /// Very inefficient way of clearing history - only for developmenbt
+    /// Inefficient way of clearing history, can be improved by dropping the table instead
     /// </summary>
-    private async Task ClearChatHistory()
+    private async Task ClearChat()
     {
         _appDbContext.ChatMessages.RemoveRange(_appDbContext.ChatMessages);
         await _appDbContext.SaveChangesAsync();

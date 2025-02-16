@@ -5,84 +5,174 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinChat"
         xmlns:vms="clr-namespace:WinChat.ViewModels"
+        xmlns:converters="clr-namespace:WinChat.Converters"
         mc:Ignorable="d"
         Title="WinChat" 
-        MinHeight="300" MinWidth="700"
+        MinHeight="300" MinWidth="900"
         Height="1000" Width="800"
         DataContext="{x:Static local:ViewModelLocator.Main}"
         Background="{Binding ColorSettings.BackgroundColor}"
         Foreground="{Binding ColorSettings.ForegroundColor}"
         Loaded="Window_Loaded">
+    <Window.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="16 8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                CornerRadius="6"
+                                Background="{TemplateBinding Background}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter x:Name="contentPresenter"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  Content="{TemplateBinding Content}"
+                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                  Margin="{TemplateBinding Padding}"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                  RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border" 
+                                CornerRadius="6"
+                                Background="{TemplateBinding Background}">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <converters:AlignmentConverter x:Key="AlignmentConverter"/>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
 
-        <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" Margin="10">
-            <ItemsControl ItemsSource="{Binding ChatMessages}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border Padding="10"
-                            CornerRadius="10"
-                            Margin="5"
-                            MaxWidth="500">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="{Binding Path=DataContext.ColorSettings.AssistantChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                    <Setter Property="HorizontalAlignment" Value="Left"/>
+        <Grid Grid.ColumnSpan="3" Grid.Row="0" >
+            <StackPanel Orientation="Horizontal">
+                <Button
+                    Command="{Binding ClearChatHistoryCommand}" 
+                    Content="🧹 Clear chat history" 
+                    FontSize="16"
+                    FontWeight="SemiBold"
+                    Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </StackPanel>
+        </Grid>
 
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Role}" Value="User">
-                                            <Setter Property="Background" Value="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
-                                            <Setter Property="HorizontalAlignment" Value="Right"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
+        <Grid Grid.Column="1" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Bottom" MinWidth="800">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
 
-                            <TextBox Text="{Binding Content}"
+            <ScrollViewer x:Name="ChatScrollViewer" VerticalScrollBarVisibility="Auto" Margin="10">
+                <ItemsControl ItemsSource="{Binding ChatMessages}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0 10"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Padding="16"
+                            CornerRadius="12"
+                            Margin="6"
+                            MaxWidth="750"
+                            HorizontalAlignment="{Binding Role, Converter={StaticResource AlignmentConverter}}">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="Background" Value="{Binding Path=DataContext.ColorSettings.AssistantChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                        <Setter Property="HorizontalAlignment" Value="Left"/>
+
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Role}" Value="User">
+                                                <Setter Property="Background" Value="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}" />
+                                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+
+                                <TextBox Text="{Binding Content}"
                                TextWrapping="Wrap"
                                Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"
-                               FontSize="14" 
+                               FontSize="16" 
+                               FontFamily="Segoe UI"
                                IsReadOnly="True"
                                Background="Transparent"
                                BorderBrush="Transparent"
-                              
                                HorizontalContentAlignment="Left">
-                                <TextBox.Style>
-                                    <Style TargetType="TextBox">
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                        <Setter Property="BorderBrush" Value="Transparent" />
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="Background" Value="Transparent" />
-                                    </Style>
-                                </TextBox.Style>
-                            </TextBox>
-                        </Border>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                            <Setter Property="BorderBrush" Value="Transparent" />
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="Background" Value="Transparent" />
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
 
-        <Grid Grid.Row="2" Margin="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBox Name="ChatTextBox" Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0" Padding="10"
-                     FontSize="14" KeyDown="TextBox_KeyDown"
+            <Grid Grid.Row="1" Margin="10 0 10 16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Name="ChatTextBox" 
+                     Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                     Margin="0 0,10,0" 
+                     FontSize="16"
+                     KeyDown="TextBox_KeyDown"
                      Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
                      Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
-            <Button Grid.Column="1" Command="{Binding SendChatCommand}" Content="Send message" Padding="10"
+
+                <Button Grid.Column="1" 
+                    Command="{Binding SendChatCommand}" 
+                    Content="Send" 
+                    FontSize="16"
+                    FontWeight="SemiBold"
                     Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
                     Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

@@ -191,7 +191,7 @@ public sealed class AiPromptService : BackgroundService
 
     private static string CreateFullPrompt(string prompt, List<string> chatHistory)
     {
-        return string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
+        return Constants.CommandsPrompt + Environment.NewLine + string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
     }
 
     private string FormatChatMessage(ChatMessageContent message, int _)
