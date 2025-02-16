@@ -10,11 +10,6 @@ using WinChat.Infrastructure.Contracts;
 using WinChat.Infrastructure.Repository;
 
 namespace WinChat.Infrastructure;
-public class RequestTextGeneration
-{
-    public string Prompt { get; set; } = string.Empty;
-    public string? SystemPrompt { get; set; }
-}
 
 public sealed class AiPromptService : BackgroundService
 {
@@ -91,16 +86,7 @@ public sealed class AiPromptService : BackgroundService
                 return false;
             }
 
-            using var scope = _scopeFactory.CreateScope();
-            var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-            var chatHistory = appDbContext.ChatMessages
-                .OrderByDescending(x => x.TimeStamp)
-                .Take(20)
-                .AsEnumerable()
-                .Select(FormatChatMessage)
-                .Reverse()
-                .ToList();
+            var chatHistory = GetChatHistorySample();
 
             var address = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={ApiKey}";
 
@@ -154,7 +140,56 @@ public sealed class AiPromptService : BackgroundService
         }
     }
 
-    private string CreateFullPrompt(string prompt, List<string> chatHistory)
+    /// <summary>
+    /// Returns the chat history - the latest messages and a sample of older messages
+    /// </summary>
+    private List<string> GetChatHistorySample()
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        const int MaxHistoryLimit = 500;
+        const int RecentMessages = 30;
+
+        var recentMessages = appDbContext.ChatMessages
+            .OrderByDescending(x => x.TimeStamp)
+            .Take(RecentMessages)
+            .ToList();
+
+        recentMessages.Reverse();
+
+        var oldestRecent = recentMessages.FirstOrDefault()?.TimeStamp;
+        if (oldestRecent == null)
+        {
+            return recentMessages.Select(FormatChatMessage).ToList();
+        }
+
+        var olderCandidates = appDbContext.ChatMessages
+            .Where(x => x.TimeStamp < oldestRecent)
+            .OrderByDescending(x => x.TimeStamp)
+            .Take(MaxHistoryLimit)
+            .ToList();
+
+        olderCandidates.Reverse();
+
+        var gap = 1.0;
+        var sampledOlder = new List<ChatMessage>();
+        for (var i = 0; i < olderCandidates.Count;)
+        {
+            sampledOlder.Add(olderCandidates[i]);
+            i += (int)Math.Ceiling(gap);
+            gap *= 1.5;
+        }
+
+        var finalChatHistory = sampledOlder
+            .Concat(recentMessages)
+            .Select(FormatChatMessage)
+            .ToList();
+
+        return finalChatHistory;
+    }
+
+    private static string CreateFullPrompt(string prompt, List<string> chatHistory)
     {
         return string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
     }
@@ -195,9 +230,8 @@ public sealed class AiPromptService : BackgroundService
 
         appDbContext.ApplicationData.Add(new ApplicationData
         {
-            Id = "ApiKey",
-            Name = "ApiKey",
-            Value = apiKey
+            SettingKey = Constants.ApplicationDataKeys.ApiKey,
+            SettingValue = apiKey
         });
         await appDbContext.SaveChangesAsync();
     }
@@ -209,12 +243,12 @@ public sealed class AiPromptService : BackgroundService
         using var scope = _scopeFactory.CreateScope();
         var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var dbResponse = await appDbContext.ApplicationData.FindAsync("ApiKey");
-        if (string.IsNullOrWhiteSpace(dbResponse?.Value))
+        var dbResponse = await appDbContext.ApplicationData.FindAsync(Constants.ApplicationDataKeys.ApiKey);
+        if (string.IsNullOrWhiteSpace(dbResponse?.SettingValue))
         {
             return null;
         }
-        ApiKey = dbResponse.Value;
+        ApiKey = dbResponse.SettingValue;
 
         return ApiKey;
     }

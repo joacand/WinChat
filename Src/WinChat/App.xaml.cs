@@ -8,6 +8,7 @@ using System.IO;
 using System.Windows;
 using WinChat.Infrastructure;
 using WinChat.Infrastructure.Repository;
+using WinChat.Services;
 using WinChat.ViewModels;
 using WinChat.Views;
 
@@ -43,6 +44,7 @@ public partial class App : Application
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<ColorSettings>();
+        services.AddTransient<SoundService>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);
 
         var dbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db");

@@ -11,33 +11,52 @@ public partial class ColorSettings(ILogger<ColorSettings> logger) : ObservableOb
     {
         var commands = new Dictionary<string, Action<string>>
         {
-            [Constants.Commands.BackgroundColor] = hex => BackgroundColorHex = hex,
-            [Constants.Commands.AssistantChatColor] = hex => AssistantChatColorHex = hex,
-            [Constants.Commands.UserChatColor] = hex => UserChatColorHex = hex
+            [Constants.Commands.BackgroundColor.Name] = hex => BackgroundColorHex = hex,
+            [Constants.Commands.AssistantChatColor.Name] = hex => AssistantChatColorHex = hex,
+            [Constants.Commands.UserChatColor.Name] = hex => UserChatColorHex = hex,
+            [Constants.Commands.ForegroundColor.Name] = hex => ForegroundColorHex = hex
         };
 
         var processedText = text;
 
         foreach (var (command, setColor) in commands)
         {
-            var fullCommand = $"#{command}#";
-            if (!processedText.Contains(fullCommand)) continue;
+            var commandWithAffixes = $"{{{command}:";
+            if (!processedText.Contains(commandWithAffixes)) continue;
 
-            var parts = processedText.Split([fullCommand], StringSplitOptions.None);
+            var parts = processedText.Split([commandWithAffixes], StringSplitOptions.None);
             if (parts.Length < 2) continue;
 
-            var hex = new string([.. parts[1].Take(6)]);
-            if (hex.Length != 6) continue;
+            var args = new string([.. parts[1].TakeWhile(x => x != '}')]);
+            if (args.Length != 6) continue;
 
-            setColor("#" + hex);
+            setColor("#" + args);
             processedText = processedText
-                .Replace($"{fullCommand}{hex}", "")
-                .Replace("  ", " ")
-                .Replace("{ }", "")
-                .Replace("{}", "");
+                .Replace($"{commandWithAffixes}{args}}}", string.Empty)
+                .Replace("  ", " ");
         }
 
         return processedText;
+    }
+
+    [ObservableProperty]
+    private Brush _foregroundColor = Brushes.Black;
+    private string? _forgroundColorHex;
+    public string? ForegroundColorHex
+    {
+        get => _forgroundColorHex;
+        set
+        {
+            try
+            {
+                ForegroundColor = (Brush)new BrushConverter().ConvertFrom(value!)!;
+                SetProperty(ref _forgroundColorHex, value);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to apply foreground color");
+            }
+        }
     }
 
     [ObservableProperty]

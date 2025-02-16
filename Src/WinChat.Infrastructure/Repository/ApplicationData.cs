@@ -1,8 +1,10 @@
-﻿namespace WinChat.Infrastructure.Repository;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WinChat.Infrastructure.Repository;
 
 public class ApplicationData
 {
-    public string? Id { get; set; }
-    public string? Name { get; set; }
-    public string? Value { get; set; }
+    [Key]
+    public string? SettingKey { get; set; }
+    public string? SettingValue { get; set; }
 }

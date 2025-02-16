@@ -6,15 +6,17 @@ using System.Threading.Channels;
 using System.Windows;
 using WinChat.Infrastructure;
 using WinChat.Infrastructure.Repository;
+using WinChat.Services;
 
 namespace WinChat.ViewModels;
 
-public partial class MainWindowViewModel : ObservableObject
+internal partial class MainWindowViewModel : ObservableObject
 {
     private readonly ColorSettings _colorSettings;
     private readonly Channel<TextGenerationNotification> _textGenerationNotificationChannel;
     private readonly Channel<RequestTextGeneration> _textGenerationRequestChannel;
     private readonly AppDbContext _appDbContext;
+    private readonly SoundService _soundService;
     private readonly ILogger<MainWindowViewModel> _logger;
 
     public ColorSettings ColorSettings => _colorSettings;
@@ -32,17 +34,29 @@ public partial class MainWindowViewModel : ObservableObject
         Channel<RequestTextGeneration> textGenerationRequestChannel,
         AppDbContext appDbContext,
         ColorSettings colorSettings,
+        SoundService soundService,
         ILogger<MainWindowViewModel> logger)
     {
         _textGenerationNotificationChannel = textGenerationNotificationChannel;
         _textGenerationRequestChannel = textGenerationRequestChannel;
         _appDbContext = appDbContext;
         _colorSettings = colorSettings;
+        _soundService = soundService;
         _logger = logger;
 
+        LoadHistory();
         StartReadingChannel();
 
         _logger.LogInformation("MainWindowViewModel initalized");
+    }
+
+    private void LoadHistory()
+    {
+        var chatMessages = _appDbContext.ChatMessages.OrderByDescending(x => x.TimeStamp).Take(10).Reverse();
+        foreach (var chatMessage in chatMessages)
+        {
+            ChatMessages.Add(chatMessage);
+        }
     }
 
     private async void StartReadingChannel()
@@ -66,6 +80,8 @@ public partial class MainWindowViewModel : ObservableObject
         await foreach (var message in _textGenerationNotificationChannel.Reader.ReadAllAsync())
         {
             if (string.IsNullOrWhiteSpace(message?.Text)) { continue; }
+            message.Text = message.Text.Trim();
+            _soundService.PlayNotification();
             await Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 var messageWithoutCommand = SearchForCommands(message.Text);
@@ -89,7 +105,9 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            return _colorSettings.ProcessColorCommands(text);
+            var modifiedText = _colorSettings.ProcessColorCommands(text);
+            modifiedText = CommandLineCommandService.ProcessCommands(modifiedText);
+            return modifiedText;
         }
         catch (Exception ex)
         {

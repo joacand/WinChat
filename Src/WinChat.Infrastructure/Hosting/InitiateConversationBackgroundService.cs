@@ -5,7 +5,7 @@ using WinChat.Infrastructure.Repository;
 
 namespace WinChat.Infrastructure.Hosting;
 
-internal class InitiateConversationBackgroundService(
+internal sealed class InitiateConversationBackgroundService(
     IServiceScopeFactory scopeFactory,
     Channel<RequestTextGeneration> textGenerationRequestChannel) : BackgroundService
 {
@@ -32,7 +32,7 @@ internal class InitiateConversationBackgroundService(
 
                 if (tooShortTimeForLastMessage)
                 {
-                    // Possible improvement - wait remaining time
+                    // Possible improvement - wait remaining time instead of just skippings
                     continue;
                 }
             }

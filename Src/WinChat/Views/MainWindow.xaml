@@ -6,9 +6,12 @@
         xmlns:local="clr-namespace:WinChat"
         xmlns:vms="clr-namespace:WinChat.ViewModels"
         mc:Ignorable="d"
-        Title="WinChat" Height="1000" Width="800"
+        Title="WinChat" 
+        MinHeight="300" MinWidth="700"
+        Height="1000" Width="800"
         DataContext="{x:Static local:ViewModelLocator.Main}"
         Background="{Binding ColorSettings.BackgroundColor}"
+        Foreground="{Binding ColorSettings.ForegroundColor}"
         Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
@@ -46,11 +49,12 @@
 
                             <TextBox Text="{Binding Content}"
                                TextWrapping="Wrap"
-                               Foreground="Black"
+                               Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"
                                FontSize="14" 
                                IsReadOnly="True"
                                Background="Transparent"
                                BorderBrush="Transparent"
+                              
                                HorizontalContentAlignment="Left">
                                 <TextBox.Style>
                                     <Style TargetType="TextBox">
