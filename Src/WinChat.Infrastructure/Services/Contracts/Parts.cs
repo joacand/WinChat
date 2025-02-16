@@ -1,4 +1,4 @@
-﻿namespace WinChat.Infrastructure.Contracts;
+﻿namespace WinChat.Infrastructure.Services.Contracts;
 
 public class Parts
 {

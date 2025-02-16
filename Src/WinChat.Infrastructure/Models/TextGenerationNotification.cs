@@ -1,6 +1,6 @@
-﻿namespace WinChat.Infrastructure;
+﻿namespace WinChat.Infrastructure.Models;
 
-public class TextGenerationNotification
+public sealed class TextGenerationNotification
 {
     public string? Text { get; set; }
     public string? Error { get; set; }

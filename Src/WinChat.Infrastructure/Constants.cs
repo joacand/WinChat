@@ -1,4 +1,6 @@
-﻿namespace WinChat.Infrastructure;
+﻿using System.Text.Json;
+
+namespace WinChat.Infrastructure;
 
 public static class Constants
 {
@@ -31,6 +33,13 @@ public static class Constants
     {
         public const string ApiKey = "ApiKey";
     }
+
+    public static readonly JsonSerializerOptions DefaultSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true
+    };
 }
 
 public record CommandStructure(string Name, string Description)

@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Channels;
 using WinChat.Infrastructure.Hosting;
+using WinChat.Infrastructure.Models;
+using WinChat.Infrastructure.Services;
+using WinChat.Infrastructure.Services.Gemini;
 
 namespace WinChat.Infrastructure;
 
@@ -14,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(requestTextGenerationChannel);
         services.AddSingleton<AiPromptService>();
         services.AddSingleton<InitiateConversationBackgroundService>();
+        services.AddSingleton<IGenerateTextService, GeminiService>();
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
     }

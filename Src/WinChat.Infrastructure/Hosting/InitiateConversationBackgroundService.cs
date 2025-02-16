@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Threading.Channels;
+using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
 
 namespace WinChat.Infrastructure.Hosting;

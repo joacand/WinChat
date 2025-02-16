@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace WinChat.Infrastructure.Contracts;
+namespace WinChat.Infrastructure.Services.Contracts;
 
 public class TextGenerationRequest
 {

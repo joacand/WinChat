@@ -5,8 +5,24 @@ using WinChat.Infrastructure;
 
 namespace WinChat.ViewModels;
 
-public partial class ColorSettings(ILogger<ColorSettings> logger) : ObservableObject
+public partial class ColorSettings : ObservableObject
 {
+    private readonly ILogger<ColorSettings> logger;
+
+    public ColorSettings(ILogger<ColorSettings> logger)
+    {
+        this.logger = logger;
+        ApplyDefaultDarkTheme();
+    }
+
+    private void ApplyDefaultDarkTheme()
+    {
+        BackgroundColorHex = "#222222";
+        AssistantChatColorHex = "#333333";
+        UserChatColorHex = "#444444";
+        ForegroundColorHex = "#DDDDDD";
+    }
+
     public string ProcessColorCommands(string text)
     {
         var commands = new Dictionary<string, Action<string>>

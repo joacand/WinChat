@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Channels;
 using System.Windows;
 using WinChat.Infrastructure;
+using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
 using WinChat.Services;
 
