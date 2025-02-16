@@ -59,6 +59,15 @@ internal partial class MainWindowViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Very inefficient way of clearing history - only for developmenbt
+    /// </summary>
+    private async Task ClearChatHistory()
+    {
+        _appDbContext.ChatMessages.RemoveRange(_appDbContext.ChatMessages);
+        await _appDbContext.SaveChangesAsync();
+    }
+
     private async void StartReadingChannel()
     {
         while (true)
@@ -82,9 +91,9 @@ internal partial class MainWindowViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(message?.Text)) { continue; }
             message.Text = message.Text.Trim();
             _soundService.PlayNotification();
+            var messageWithoutCommand = SearchForCommands(message.Text);
             await Application.Current.Dispatcher.BeginInvoke(() =>
             {
-                var messageWithoutCommand = SearchForCommands(message.Text);
                 ChatMessages.Add(new ChatMessage
                 {
                     Role = "Assistant",
@@ -95,7 +104,7 @@ internal partial class MainWindowViewModel : ObservableObject
             _appDbContext.ChatMessages.Add(new ChatMessage
             {
                 Role = "Assistant",
-                Content = message.Text
+                Content = messageWithoutCommand
             });
             await _appDbContext.SaveChangesAsync();
         }

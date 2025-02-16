@@ -77,8 +77,12 @@
                 <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBox Name="ChatTextBox" Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0" Padding="10"
-                     FontSize="14" Background="GhostWhite" KeyDown="TextBox_KeyDown" />
-            <Button Grid.Column="1" Command="{Binding SendChatCommand}" Content="Send message" Padding="10"/>
+                     FontSize="14" KeyDown="TextBox_KeyDown"
+                     Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
+                     Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
+            <Button Grid.Column="1" Command="{Binding SendChatCommand}" Content="Send message" Padding="10"
+                    Background="{Binding Path=DataContext.ColorSettings.UserChatColor, RelativeSource={RelativeSource AncestorType=Window}}"
+                    Foreground="{Binding Path=DataContext.ColorSettings.ForegroundColor, RelativeSource={RelativeSource AncestorType=Window}}"/>
         </Grid>
     </Grid>
 </Window>
