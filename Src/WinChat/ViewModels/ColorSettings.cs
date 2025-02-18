@@ -49,7 +49,9 @@ public partial class ColorSettings : ObservableObject
             setColor("#" + args);
             processedText = processedText
                 .Replace($"{commandWithAffixes}{args}}}", string.Empty)
-                .Replace("  ", " ");
+                .Replace("  ", " ")
+                .Replace("\n\n", "\n"
+                .Trim());
         }
 
         return processedText;

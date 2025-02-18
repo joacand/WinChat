@@ -29,7 +29,11 @@
             <StackPanel Orientation="Horizontal">
                 <Button
                     Command="{Binding ClearChatHistoryCommand}" 
-                    Content="🧹 Clear chat history"/>
+                    Content="🧹 Clear chat history"
+                    Margin="10,0,10,0"/>
+                <Button
+                    Command="{Binding OpenConfigurationCommand}" 
+                    Content="⚙️ Configuration"/>
             </StackPanel>
         </Grid>
 

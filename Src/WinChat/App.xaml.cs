@@ -43,6 +43,7 @@ public partial class App : Application
         services.AddSingleton(_configuration);
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
+        services.AddTransient<ConfigurationViewModel>();
         services.AddTransient<ColorSettings>();
         services.AddTransient<SoundService>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);

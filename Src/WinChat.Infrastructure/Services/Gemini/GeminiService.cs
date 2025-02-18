@@ -19,7 +19,8 @@ internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGenera
     };
 
     private string ApiKey = string.Empty;
-    private static string GenerateContentEndpoint(string apiKey) => $"v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
+    private const string Model = "gemini-2.0-flash";
+    private static string GenerateContentEndpoint(string apiKey) => $"v1beta/models/{Model}:generateContent?key={apiKey}";
 
     public async Task<TextGenerationResponse> GenerateText(TextGenerationRequest textGenerationRequest)
     {
@@ -33,9 +34,41 @@ internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGenera
         };
 
         var response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
         var textGenerationResponse = await Deserialize<TextGenerationResponse>(response);
 
         return textGenerationResponse ?? throw new Exception("Received null deserialized response");
+    }
+
+    public async Task SetApiToken(string apiToken)
+    {
+        if (string.IsNullOrWhiteSpace(apiToken))
+        {
+            return;
+        }
+
+        ApiKey = apiToken;
+
+        using var scope = scopeFactory.CreateScope();
+        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        if (!appDbContext.ApplicationData.Any(x => x.SettingKey == Constants.ApplicationDataKeys.ApiKey))
+        {
+            appDbContext.ApplicationData.Add(new ApplicationData
+            {
+                SettingKey = Constants.ApplicationDataKeys.ApiKey,
+                SettingValue = apiToken
+            });
+            await appDbContext.SaveChangesAsync();
+            return;
+        }
+
+        var dbResponse = await appDbContext.ApplicationData.FindAsync(Constants.ApplicationDataKeys.ApiKey);
+        if (dbResponse != null)
+        {
+            dbResponse.SettingValue = apiToken;
+            await appDbContext.SaveChangesAsync();
+        }
     }
 
     private static async Task<T> Deserialize<T>(HttpResponseMessage response)
@@ -43,28 +76,6 @@ internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGenera
         var stringContent = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<T>(stringContent, Constants.DefaultSerializerOptions);
         return result ?? throw new Exception("Null result after deserialization");
-    }
-
-    /// <summary>
-    /// Todo: Implement a way to call this add key from UI
-    /// In addition the API handling should be moved to a separate class
-    /// </summary>
-    public async Task AddApiKey(string apiKey)
-    {
-        if (string.IsNullOrWhiteSpace(apiKey))
-        {
-            return;
-        }
-
-        using var scope = scopeFactory.CreateScope();
-        var appDbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        appDbContext.ApplicationData.Add(new ApplicationData
-        {
-            SettingKey = Constants.ApplicationDataKeys.ApiKey,
-            SettingValue = apiKey
-        });
-        await appDbContext.SaveChangesAsync();
     }
 
     private async Task<string?> GetApiKey()

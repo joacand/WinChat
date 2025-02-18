@@ -8,6 +8,7 @@ using WinChat.Infrastructure;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
 using WinChat.Services;
+using WinChat.Views;
 
 namespace WinChat.ViewModels;
 
@@ -67,6 +68,12 @@ internal partial class MainWindowViewModel : ObservableObject
         ChatMessages.Clear();
     }
 
+    [RelayCommand]
+    public void OpenConfiguration()
+    {
+        _ = ConfigurationView.Show();
+    }
+
     /// <summary>
     /// Inefficient way of clearing history, can be improved by dropping the table instead
     /// </summary>
@@ -96,6 +103,12 @@ internal partial class MainWindowViewModel : ObservableObject
     {
         await foreach (var message in _textGenerationNotificationChannel.Reader.ReadAllAsync())
         {
+            if (!string.IsNullOrWhiteSpace(message?.Error) || message?.Exception != null)
+            {
+                await HandleError(message);
+                return;
+            }
+
             if (string.IsNullOrWhiteSpace(message?.Text)) { continue; }
             message.Text = message.Text.Trim();
             _soundService.PlayNotification();
@@ -116,6 +129,19 @@ internal partial class MainWindowViewModel : ObservableObject
             });
             await _appDbContext.SaveChangesAsync();
         }
+    }
+
+    private async Task HandleError(TextGenerationNotification message)
+    {
+        await Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            ChatMessages.Add(new ChatMessage
+            {
+                Role = "Assistant",
+                Content = $"{message.Error} {message.Exception}"
+            });
+            NewMessageAdded?.Invoke();
+        });
     }
 
     private string SearchForCommands(string text)

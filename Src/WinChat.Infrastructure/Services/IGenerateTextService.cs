@@ -2,7 +2,8 @@
 
 namespace WinChat.Infrastructure.Services;
 
-internal interface IGenerateTextService
+public interface IGenerateTextService
 {
     Task<TextGenerationResponse> GenerateText(TextGenerationRequest textGenerationRequest);
+    Task SetApiToken(string apiToken);
 }
