@@ -7,7 +7,6 @@
 > [!NOTE] 
 > This project is a fun, experimental AI chatbot and is not intended for production use... or any other kind of use. 
 
-
 ## 📚 Features
 - **Application theme changes 👨‍🎨**: Winnie loves playing around with the application theme and help you specify the colors of the theme. Note that he doesn't always listen and may change the colors whenever he feels like it...
 - **Execute windows commands! 🖥️**: Winnie is able to execute any command in the command prompt... Yes this is a bad idea. To help you survive there is a prompt that will ask you if you really want to listen to Winnie (⚠️Warning⚠️ Winnie has been known to try and shut down your PC "for fun")
@@ -20,8 +19,7 @@
 
 <img src="Examples/Themes.png" alt="drawing" width="1000"/>
 
-
-### 🖨️ Winnie helps me finding my printers
+### 🖨️ Winnie helps finding printers
 
 <img src="Examples/Printers.png" alt="drawing" width="1000"/>
 
