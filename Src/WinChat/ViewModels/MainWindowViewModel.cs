@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.Threading.Channels;
 using System.Windows;
 using WinChat.Infrastructure;
+using WinChat.Infrastructure.Events;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
 using WinChat.Services;
@@ -12,7 +13,7 @@ using WinChat.Views;
 
 namespace WinChat.ViewModels;
 
-internal partial class MainWindowViewModel : ObservableObject
+internal partial class MainWindowViewModel : ObservableObject, IEventHandler<CharHistoryClearedEvent>
 {
     private readonly ColorSettings _colorSettings;
     private readonly Channel<TextGenerationNotification> _textGenerationNotificationChannel;
@@ -37,6 +38,7 @@ internal partial class MainWindowViewModel : ObservableObject
         AppDbContext appDbContext,
         ColorSettings colorSettings,
         SoundService soundService,
+        EventDispatcher eventDispatcher,
         ILogger<MainWindowViewModel> logger)
     {
         _textGenerationNotificationChannel = textGenerationNotificationChannel;
@@ -49,6 +51,7 @@ internal partial class MainWindowViewModel : ObservableObject
         StartReadingChannel();
         LoadHistory();
 
+        eventDispatcher.Register(this);
         _logger.LogInformation("MainWindowViewModel initalized");
     }
 
@@ -62,25 +65,17 @@ internal partial class MainWindowViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public async Task ClearChatHistory()
+    public static void OpenConfiguration()
     {
-        await ClearChat();
-        ChatMessages.Clear();
+        ConfigurationView.Show();
     }
 
-    [RelayCommand]
-    public void OpenConfiguration()
+    public async Task Handle(CharHistoryClearedEvent @event)
     {
-        _ = ConfigurationView.Show();
-    }
-
-    /// <summary>
-    /// Inefficient way of clearing history, can be improved by dropping the table instead
-    /// </summary>
-    private async Task ClearChat()
-    {
-        _appDbContext.ChatMessages.RemoveRange(_appDbContext.ChatMessages);
-        await _appDbContext.SaveChangesAsync();
+        await Application.Current.Dispatcher.BeginInvoke(() =>
+        {
+            ChatMessages.Clear();
+        });
     }
 
     private async void StartReadingChannel()

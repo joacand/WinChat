@@ -28,12 +28,8 @@
         <Grid Grid.ColumnSpan="3" Grid.Row="0" >
             <StackPanel Orientation="Horizontal">
                 <Button
-                    Command="{Binding ClearChatHistoryCommand}" 
-                    Content="🧹 Clear chat history"
-                    Margin="10,0,10,0"/>
-                <Button
                     Command="{Binding OpenConfigurationCommand}" 
-                    Content="⚙️ Configuration"/>
+                    Content="⚙️"/>
             </StackPanel>
         </Grid>
 
@@ -90,14 +86,17 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBox Name="ChatTextBox" 
-                     Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                     Margin="0,0,10,0" 
-                     KeyDown="TextBox_KeyDown"/>
+                         Text="{Binding UserMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                         Margin="0,0,10,0" 
+                         Padding="5"
+                         KeyDown="TextBox_KeyDown"/>
 
                 <Button Grid.Column="1" 
-                    Command="{Binding SendChatCommand}" 
-                    Content="Send" 
-                    FontWeight="SemiBold"/>
+                        Command="{Binding SendChatCommand}" 
+                        Content="💬"
+                        Padding="0"
+                        FontWeight="SemiBold"
+                        Background="Transparent"/>
             </Grid>
         </Grid>
     </Grid>

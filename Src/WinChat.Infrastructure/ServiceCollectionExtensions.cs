@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Channels;
+using WinChat.Infrastructure.Events;
 using WinChat.Infrastructure.Hosting;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Services;
@@ -20,5 +21,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IGenerateTextService, GeminiService>();
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
+        services.AddSingleton<EventDispatcher>();
     }
 }

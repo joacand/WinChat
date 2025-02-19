@@ -33,6 +33,13 @@
                      Background="WhiteSmoke"
                      Margin="0,0,0,20"/>
 
+
+            <Button HorizontalAlignment="Left"
+                    Background="WhiteSmoke"
+                    Command="{Binding ClearChatHistoryCommand}" 
+                    Content="🧹 Clear chat history"
+                    Margin="0,0,10,10"/>
+
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                 <Button x:Name="CancelButton" 
                         Content="Cancel" 
