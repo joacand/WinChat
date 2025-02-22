@@ -50,7 +50,6 @@ public partial class App : Application
         services.AddTransient<ConfigurationViewModel>();
         services.AddSingleton<ColorSettings>();
         services.AddTransient<SoundService>();
-        services.AddHostedService<FunctionHandler>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);
 
         var dbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db");

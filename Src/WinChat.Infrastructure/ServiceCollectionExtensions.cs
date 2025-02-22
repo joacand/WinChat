@@ -6,6 +6,7 @@ using WinChat.Infrastructure.Hosting;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Services;
 using WinChat.Infrastructure.Services.Gemini;
+using WinChat.Infrastructure.Services.Tools;
 
 namespace WinChat.Infrastructure;
 
@@ -27,5 +28,6 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
         services.AddSingleton<EventDispatcher>();
+        services.AddTransient<BackgroundColorSelectionTool>();
     }
 }

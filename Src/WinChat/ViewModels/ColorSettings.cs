@@ -2,15 +2,17 @@
 using Microsoft.Extensions.Logging;
 using System.Windows.Media;
 using WinChat.Infrastructure;
+using WinChat.Infrastructure.Events;
 
 namespace WinChat.ViewModels;
 
-public partial class ColorSettings : ObservableObject
+public partial class ColorSettings : ObservableObject, IEventHandler<ColorChangeRequestEvent>
 {
     private readonly ILogger<ColorSettings> logger;
 
-    public ColorSettings(ILogger<ColorSettings> logger)
+    public ColorSettings(EventDispatcher eventDispatcher, ILogger<ColorSettings> logger)
     {
+        eventDispatcher.Register(this);
         this.logger = logger;
         ApplyDefaultDarkTheme();
     }
@@ -55,6 +57,19 @@ public partial class ColorSettings : ObservableObject
         }
 
         return processedText;
+    }
+
+    public Task Handle(ColorChangeRequestEvent @event)
+    {
+        if (@event.ColorType == ColorType.ForegroundColor)
+            ForegroundColorHex = @event.RgbColor;
+        else if (@event.ColorType == ColorType.BackgroundColor)
+            BackgroundColorHex = @event.RgbColor;
+        else if (@event.ColorType == ColorType.AssistantChatColor)
+            AssistantChatColorHex = @event.RgbColor;
+        else if (@event.ColorType == ColorType.UserChatColor)
+            UserChatColorHex = @event.RgbColor;
+        return Task.CompletedTask;
     }
 
     [ObservableProperty]

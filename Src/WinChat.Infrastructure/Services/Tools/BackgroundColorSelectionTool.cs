@@ -1,8 +1,9 @@
 ﻿using Microsoft.Extensions.AI;
+using WinChat.Infrastructure.Events;
 
-namespace WinChat.Infrastructure.Services;
+namespace WinChat.Infrastructure.Services.Tools;
 
-public class BackgroundColorSelectionTool : AIFunction
+public class BackgroundColorSelectionTool(EventDispatcher eventDispatcher) : AIFunction
 {
     public override string Name => "select_application_background_color";
     public override string Description => "Tool for changing the background color for the whole application";
@@ -12,6 +13,11 @@ public class BackgroundColorSelectionTool : AIFunction
     };
     protected override Task<object?> InvokeCoreAsync(IEnumerable<KeyValuePair<string, object?>> arguments, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        eventDispatcher.Publish(new ColorChangeRequestEvent()
+        {
+            ColorType = ColorType.BackgroundColor,
+            RgbColor = arguments.First().Value.ToString().Trim('"').Trim()
+        });
+        return Task.FromResult<object?>(new object());
     }
 }

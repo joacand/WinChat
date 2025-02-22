@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Channels;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
+using WinChat.Infrastructure.Services.Tools;
 
 namespace WinChat.Infrastructure.Services;
 
@@ -50,6 +51,7 @@ internal sealed class AiPromptService(
     {
         try
         {
+            using var scope = scopeFactory.CreateScope();
 
             if (string.IsNullOrWhiteSpace(prompt))
             {
@@ -82,7 +84,7 @@ internal sealed class AiPromptService(
             {
                 Tools =
                 [
-                    new BackgroundColorSelectionTool()
+                    scope.ServiceProvider.GetRequiredService<BackgroundColorSelectionTool>()
                 ]
             };
 
@@ -104,7 +106,13 @@ internal sealed class AiPromptService(
                 {
                     if (content is FunctionCallContent functionCallContent)
                     {
-                        await EvaluateFunction(functionCallContent);
+                        foreach (var tool in chatOptions.Tools)
+                        {
+                            if (tool.Name == functionCallContent.Name && tool is AIFunction function)
+                            {
+                                await function.InvokeAsync(functionCallContent.Arguments, CancellationToken.None);
+                            }
+                        }
                     }
                     if (content is TextContent textContent)
                     {
@@ -125,11 +133,6 @@ internal sealed class AiPromptService(
             logger.LogError(ex, "Failed to get text generation response");
             await textGenerationNotificationChannel.Writer.WriteAsync(new() { Error = "Failed to get text generation response", Exception = ex });
         }
-    }
-
-    private async Task EvaluateFunction(FunctionCallContent functionCallContent)
-    {
-        await functionCallChannel.Writer.WriteAsync(functionCallContent);
     }
 
     private static void AddChatHistory(List<ChatMessage> messages, List<string> chatHistory)
