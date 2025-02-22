@@ -1,6 +1,6 @@
 ﻿namespace WinChat.Infrastructure.Repository;
 
-public class ChatMessage : ChatMessageContent
+public class ChatMessageEntry : ChatMessageContent
 {
     public int Id { get; set; }
 }

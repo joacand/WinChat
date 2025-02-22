@@ -28,7 +28,7 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
     private string _userMessage = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<ChatMessage> _chatMessages = [];
+    private ObservableCollection<ChatMessageEntry> _chatMessages = [];
 
     public event Action? NewMessageAdded;
 
@@ -110,14 +110,14 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             var messageWithoutCommand = SearchForCommands(message.Text);
             await Application.Current.Dispatcher.BeginInvoke(() =>
             {
-                ChatMessages.Add(new ChatMessage
+                ChatMessages.Add(new ChatMessageEntry
                 {
                     Role = "Assistant",
                     Content = messageWithoutCommand
                 });
                 NewMessageAdded?.Invoke();
             });
-            _appDbContext.ChatMessages.Add(new ChatMessage
+            _appDbContext.ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "Assistant",
                 Content = messageWithoutCommand
@@ -130,7 +130,7 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
     {
         await Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            ChatMessages.Add(new ChatMessage
+            ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "Assistant",
                 Content = $"{message.Error} {message.Exception}"
@@ -165,16 +165,9 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
         var message = UserMessage;
         UserMessage = string.Empty;
 
-        _appDbContext.ChatMessages.Add(new ChatMessage
-        {
-            Role = "User",
-            Content = message
-        });
-        await _appDbContext.SaveChangesAsync();
-
         await Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            ChatMessages.Add(new ChatMessage
+            ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "User",
                 Content = message
@@ -187,5 +180,12 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             Prompt = message,
             SystemPrompt = Constants.UserInputSystemPrompt
         });
+
+        _appDbContext.ChatMessages.Add(new ChatMessageEntry
+        {
+            Role = "User",
+            Content = message
+        });
+        await _appDbContext.SaveChangesAsync();
     }
 }
