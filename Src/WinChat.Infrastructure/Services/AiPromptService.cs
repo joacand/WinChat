@@ -14,6 +14,7 @@ internal sealed class AiPromptService(
     IServiceScopeFactory scopeFactory,
     Channel<TextGenerationNotification> textGenerationNotificationChannel,
     Channel<RequestTextGeneration> textGenerationRequestChannel,
+    Channel<FunctionCallContent> functionCallChannel,
     ILogger<AiPromptService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -77,10 +78,18 @@ internal sealed class AiPromptService(
                     Text = CreateFullPrompt(prompt)
                 });
 
+            ChatOptions chatOptions = new()
+            {
+                Tools =
+                [
+                    new BackgroundColorSelectionTool()
+                ]
+            };
+
             ChatResponse? chatResponse = null;
             try
             {
-                chatResponse = await chatClient.GetResponseAsync(messages);
+                chatResponse = await chatClient.GetResponseAsync(messages, chatOptions);
             }
             catch (Exception ex)
             {
@@ -90,7 +99,20 @@ internal sealed class AiPromptService(
 
             if (chatResponse.Message.Contents.Count > 0)
             {
-                var result = string.Join(Environment.NewLine, chatResponse.Message.Contents.Select(x => x));
+                List<string> response = [];
+                foreach (var content in chatResponse.Message.Contents)
+                {
+                    if (content is FunctionCallContent functionCallContent)
+                    {
+                        await EvaluateFunction(functionCallContent);
+                    }
+                    if (content is TextContent textContent)
+                    {
+                        response.Add(textContent.Text);
+                    }
+                }
+
+                var result = string.Join(Environment.NewLine, response);
                 await textGenerationNotificationChannel.Writer.WriteAsync(new() { Text = result });
             }
             else
@@ -103,6 +125,11 @@ internal sealed class AiPromptService(
             logger.LogError(ex, "Failed to get text generation response");
             await textGenerationNotificationChannel.Writer.WriteAsync(new() { Error = "Failed to get text generation response", Exception = ex });
         }
+    }
+
+    private async Task EvaluateFunction(FunctionCallContent functionCallContent)
+    {
+        await functionCallChannel.Writer.WriteAsync(functionCallContent);
     }
 
     private static void AddChatHistory(List<ChatMessage> messages, List<string> chatHistory)

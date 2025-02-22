@@ -35,6 +35,7 @@ internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGemini
         };
 
         var response = await _httpClient.SendAsync(request, cancellationToken);
+        var r = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
         var textGenerationResponse = await Deserialize<TextGenerationResponse>(response);
 

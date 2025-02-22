@@ -22,11 +22,11 @@ internal sealed class GeminiChatClient(IGeminiService geminiService) : IChatClie
     {
         ArgumentNullException.ThrowIfNull(chatMessages);
 
-        var geminiChatMessages = GeminiMapper.ToGeminiMessages(chatMessages, ToolCallJsonSerializerOptions);
         var geminiAIOptions = GeminiMapper.ToGeminiOptions(options);
+        var geminiChatMessages = GeminiMapper.ToGeminiMessages(chatMessages, geminiAIOptions, ToolCallJsonSerializerOptions);
 
         // Make the call to OpenAI.
-        var response = await geminiService.GenerateText(geminiChatMessages, cancellationToken).ConfigureAwait(false);
+        var response = await geminiService.GenerateText(geminiChatMessages,  cancellationToken).ConfigureAwait(false);
 
         return GeminiMapper.FromGeminiResponse(response, options, geminiAIOptions);
     }

@@ -1,10 +1,12 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.IO;
+using System.Threading.Channels;
 using System.Windows;
 using WinChat.Infrastructure;
 using WinChat.Infrastructure.Repository;
@@ -40,12 +42,15 @@ public partial class App : Application
 
     private void ConfigureServices(HostBuilderContext context, IServiceCollection services)
     {
+        var functionCallChannel = Channel.CreateUnbounded<FunctionCallContent>();
+        services.AddSingleton(functionCallChannel);
         services.AddSingleton(_configuration);
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<ConfigurationViewModel>();
-        services.AddTransient<ColorSettings>();
+        services.AddSingleton<ColorSettings>();
         services.AddTransient<SoundService>();
+        services.AddHostedService<FunctionHandler>();
         ServiceCollectionExtensions.RegisterInfrastructureServices(services);
 
         var dbFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "db");

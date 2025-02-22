@@ -39,13 +39,13 @@ namespace WinChat.Infrastructure.Services.Gemini
     }
     internal static class GeminiMapper
     {
-        public static TextGenerationRequest ToGeminiMessages(IList<Microsoft.Extensions.AI.ChatMessage> chatMessages, JsonSerializerOptions toolCallJsonSerializerOptions)
+        public static TextGenerationRequest ToGeminiMessages(IList<Microsoft.Extensions.AI.ChatMessage> chatMessages, List<GeminiTool> tools, JsonSerializerOptions toolCallJsonSerializerOptions)
         {
             var systemInstructions = new SystemInstruction();
-            var content = new Contents();
+            //var content = new Contents();
 
             var systemCollection = new List<string>();
-            var contentCollection = new List<string>();
+            var contentCollection = new List<Contents>();
 
             foreach (var input in chatMessages)
             {
@@ -63,13 +63,17 @@ namespace WinChat.Infrastructure.Services.Gemini
                 else if (input.Role == ChatRole.User)
                 {
                     var parts = ToChatContent(input.Contents);
-                    var gMsg = new GeminiMessage
+                    //var gMsg = new GeminiMessage
+                    //{
+                    //    Role = input.Role.ToString(),
+                    //    ParticipantName = input.AuthorName,
+                    //    Text = string.Join(" ", parts)
+                    //};
+                    contentCollection.Add(new Contents
                     {
                         Role = input.Role.ToString(),
-                        ParticipantName = input.AuthorName,
-                        Text = string.Join(" ", parts)
-                    };
-                    contentCollection.Add(JsonSerializer.Serialize(gMsg, toolCallJsonSerializerOptions));
+                        Parts = new() { Text = string.Join(" ", parts) }
+                    });
                 }
                 else if (input.Role == ChatRole.Tool)
                 {
@@ -91,41 +95,52 @@ namespace WinChat.Infrastructure.Services.Gemini
                             }
 
 
-                            contentCollection.Add(JsonSerializer.Serialize(new ToolChatMessage(resultContent.CallId, result ?? string.Empty)));
+                            //   contentCollection.Add(JsonSerializer.Serialize(new ToolChatMessage(resultContent.CallId, result ?? string.Empty)));
                         }
                     }
                 }
                 else if (input.Role == ChatRole.Assistant)
                 {
                     var parts = ToChatContent(input.Contents);
-                    var message = new AssistantMessage
+                    //var message = new AssistantMessage
+                    //{
+                    //    Role = input.Role.ToString(),
+                    //    ParticipantName = input.AuthorName,
+                    //    Text = string.Join(" ", parts)
+                    //};
+                    contentCollection.Add(new Contents
                     {
                         Role = input.Role.ToString(),
-                        ParticipantName = input.AuthorName,
-                        Text = string.Join(" ", parts)
-                    };
+                        Parts = new() { Text = string.Join(" ", parts) }
+                    });
 
                     foreach (var aicontent in input.Contents)
                     {
                         if (aicontent is FunctionCallContent callRequest)
                         {
-                            message.ToolCalls.Add(
-                                new ChatToolCall(
-                                    callRequest.CallId,
-                                    callRequest.Name,
-                                   string.Join(',', callRequest.Arguments.Keys)));
+                            //message.ToolCalls.Add(
+                            //    new ChatToolCall(
+                            //        callRequest.CallId,
+                            //        callRequest.Name,
+                            //       string.Join(',', callRequest.Arguments.Keys)));
                         }
                     }
 
-                    contentCollection.Add(JsonSerializer.Serialize(message, toolCallJsonSerializerOptions));
+                    // contentCollection.Add(JsonSerializer.Serialize(message, toolCallJsonSerializerOptions));
                 }
             }
 
             return new TextGenerationRequest
             {
                 SystemInstruction = new SystemInstruction { Parts = new() { Text = string.Join(",", systemCollection) } },
-                Contents = new Contents { Parts = new() { Text = string.Join(",", contentCollection) } }
+                Contents = new Contents { Parts = new() { Text = string.Join(",", contentCollection.Select(x => JsonSerializer.Serialize(x, Constants.DefaultSerializerOptions))) } },
+                Tools = GenerateTools(tools)
             };
+        }
+
+        private static List<GeminiTool> GenerateTools(List<GeminiTool> tools)
+        {
+            return tools;
         }
 
         private static List<string> ToChatContent(IList<AIContent> contents)
@@ -173,17 +188,17 @@ namespace WinChat.Infrastructure.Services.Gemini
             // Also manufacture function calling content items from any tool calls in the response.
             if (options?.Tools is { Count: > 0 })
             {
-                ;
-                //foreach (ChatToolCall toolCall in geminiResponse.ToolCalls)
-                //{
-                //    if (!string.IsNullOrWhiteSpace(toolCall.FunctionName))
-                //    {
-                //        var callContent = ParseCallContentFromBinaryData(toolCall.FunctionArguments, toolCall.Id, toolCall.FunctionName);
-                //        callContent.RawRepresentation = toolCall;
+                foreach (var functionPart in candidate.Content.Parts.Where(x => x.FunctionCall != null))
+                {
+                    var toolCall = functionPart.FunctionCall;
+                    if (!string.IsNullOrWhiteSpace(toolCall.Name))
+                    {
+                        var callContent = ParseCallContent(toolCall.Args, toolCall.Name);
+                        callContent.RawRepresentation = toolCall;
 
-                //        returnMessage.Contents.Add(callContent);
-                //    }
-                //}
+                        returnMessage.Contents.Add(callContent);
+                    }
+                }
             }
 
             // Wrap the content in a ChatResponse to return.
@@ -226,9 +241,43 @@ namespace WinChat.Infrastructure.Services.Gemini
             };
         }
 
-        public static object ToGeminiOptions(ChatOptions? options)
+        private static FunctionCallContent ParseCallContent(Dictionary<string, object?> args, string name)
         {
-            return null;
+            return FunctionCallContent.CreateFromParsedArguments<string>(name, name, name, json => args);
+        }
+
+        public static List<GeminiTool> ToGeminiOptions(ChatOptions? options)
+        {
+            var tools = new List<GeminiTool>();
+
+            foreach (var t in options.Tools)
+            {
+                var tool = new GeminiTool
+                {
+                    FunctionDecleration =
+                    [
+                        new GeminiFunctionDecleration
+                        {
+                            Name = t.Name,
+                            Description = t.Description,
+                            Parameters = new GeminiParameters
+                            {
+                                Properties = t.AdditionalProperties.ToDictionary(k => k.Key, v => new InternalParameter
+                                {
+                                   Description = (string)v.Value
+                                }),
+                                Required =
+                                [
+                                    "rgbColor" // TODO FIX
+                                ]
+                            }
+                        }
+                    ]
+                };
+                tools.Add(tool);
+            }
+
+            return tools;
         }
     }
 }
