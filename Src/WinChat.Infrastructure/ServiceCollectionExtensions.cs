@@ -19,9 +19,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(requestTextGenerationChannel);
         services.AddSingleton<AiPromptService>();
         services.AddSingleton<InitiateConversationBackgroundService>();
-        services.AddSingleton<GeminiAiService>();
-        services.AddSingleton<IGenerateTextService>(scope => scope.GetRequiredService<GeminiAiService>());
-        services.AddSingleton<IChatClient>(scope => scope.GetRequiredService<GeminiAiService>());
+        services.AddSingleton<GeminiService>();
+        services.AddSingleton<IGeminiService>(services => services.GetRequiredService<GeminiService>());
+        services.AddSingleton<IApiTokenConfiguration>(services => services.GetRequiredService<GeminiService>());
+        services.AddSingleton<GeminiChatClient>();
+        services.AddSingleton<IChatClient>(scope => scope.GetRequiredService<GeminiChatClient>());
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
         services.AddSingleton<EventDispatcher>();

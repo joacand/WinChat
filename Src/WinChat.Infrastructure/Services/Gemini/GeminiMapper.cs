@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.IO;
 using System.Text.Json;
-using WinChat.Infrastructure.Services.Contracts;
+using WinChat.Infrastructure.Services.Gemini.Contracts;
 
 namespace WinChat.Infrastructure.Services.Gemini
 {

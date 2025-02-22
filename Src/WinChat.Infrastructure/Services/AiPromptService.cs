@@ -168,9 +168,6 @@ internal sealed class AiPromptService(
         return finalChatHistory;
     }
 
-    private static string CreateFullPrompt(string prompt, List<string> chatHistory) =>
-        Constants.CommandsPrompt + Environment.NewLine + string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
-
     private static string CreateFullPrompt(string prompt) =>
         Constants.CommandsPrompt + Environment.NewLine + Environment.NewLine + $"New user message: {prompt}";
 

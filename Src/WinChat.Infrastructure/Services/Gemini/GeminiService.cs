@@ -1,17 +1,12 @@
-﻿using Microsoft.Extensions.AI;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using WinChat.Infrastructure.Repository;
-using WinChat.Infrastructure.Services.Contracts;
+using WinChat.Infrastructure.Services.Gemini.Contracts;
 
 namespace WinChat.Infrastructure.Services.Gemini;
-
-/// <summary>
-/// Implements the Microsoft.Extensions.AI interfaces with Gemini - only partly implemented.
-/// </summary>
-internal sealed class GeminiAiService(IServiceScopeFactory scopeFactory) : IGenerateTextService, IChatClient
+internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGeminiService, IApiTokenConfiguration
 {
     private readonly IServiceScopeFactory scopeFactory = scopeFactory;
 
@@ -19,9 +14,9 @@ internal sealed class GeminiAiService(IServiceScopeFactory scopeFactory) : IGene
     {
         BaseAddress = new Uri("https://generativelanguage.googleapis.com/"),
         DefaultRequestHeaders =
-        {
-            Accept = { new MediaTypeWithQualityHeaderValue("application/json") }
-        }
+    {
+        Accept = { new MediaTypeWithQualityHeaderValue("application/json") }
+    }
     };
     private string ApiKey = string.Empty;
     private const string Model = "gemini-2.0-flash";
@@ -100,47 +95,4 @@ internal sealed class GeminiAiService(IServiceScopeFactory scopeFactory) : IGene
 
         return ApiKey;
     }
-
-    private readonly ChatClientMetadata _metadata;
-
-    private JsonSerializerOptions _toolCallJsonSerializerOptions = AIJsonUtilities.DefaultOptions;
-    public JsonSerializerOptions ToolCallJsonSerializerOptions
-    {
-        get => _toolCallJsonSerializerOptions;
-        set => _toolCallJsonSerializerOptions = value;
-    }
-
-    public async Task<ChatResponse> GetResponseAsync(
-        IList<ChatMessage> chatMessages,
-        ChatOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(chatMessages);
-
-        var geminiChatMessages = GeminiMapper.ToGeminiMessages(chatMessages, ToolCallJsonSerializerOptions);
-        var geminiAIOptions = GeminiMapper.ToGeminiOptions(options);
-
-        // Make the call to OpenAI.
-        var response = await GenerateText(geminiChatMessages, cancellationToken).ConfigureAwait(false);
-
-        return GeminiMapper.FromGeminiResponse(response, options, geminiAIOptions);
-    }
-
-    public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IList<ChatMessage> chatMessages, ChatOptions? options = null, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? GetService(Type serviceType, object? serviceKey = null)
-    {
-        ArgumentNullException.ThrowIfNull(serviceKey);
-
-        return
-            serviceKey is not null ? null :
-            serviceType == typeof(ChatClientMetadata) ? _metadata :
-            serviceType.IsInstanceOfType(this) ? this :
-            null;
-    }
-
-    public void Dispose() { }
 }
