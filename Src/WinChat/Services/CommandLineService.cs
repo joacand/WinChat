@@ -1,93 +1,63 @@
-﻿using System.Diagnostics;
-using System.IO;
-using System.Windows;
-using WinChat.Infrastructure;
+﻿using Microsoft.Extensions.Hosting;
+using System.Threading.Channels;
+using WinChat.Infrastructure.Events;
+using WinChat.Infrastructure.Models;
+using WinChat.Infrastructure.Services;
 using WinChat.Views;
 
 namespace WinChat.Services;
 
-internal static class CommandLineService
+internal sealed class CommandLineService : IEventHandler<CommandRequestedEvent>, IHostedService
 {
-    public static string ProcessCommands(string text)
+    private readonly Channel<TextGenerationNotification> textGenerationNotificationChannel;
+
+    public CommandLineService(
+        EventDispatcher eventDispatcher,
+        Channel<TextGenerationNotification> textGenerationNotificationChannel)
     {
-        var commands = new Dictionary<string, Action<string>>
-        {
-            [Constants.Commands.CommandLine.Name] = result => MessageBox.Show(result),
-        };
-
-        var processedText = text;
-
-        foreach (var (command, action) in commands)
-        {
-            var commandWithAffixes = $"{{{command}:";
-            if (!processedText.Contains(commandWithAffixes)) continue;
-
-            var parts = processedText.Split([commandWithAffixes], StringSplitOptions.None);
-            if (parts.Length < 2) continue;
-
-            var args = new string([.. parts[1].TakeWhile(x => x != '}')]);
-            if (args.Length == 0) continue;
-
-            var userResult = ConfirmationDialog.Show($"The assistant wants to send the following command, do you want to proceed?",
-                args, "Confirmation");
-
-            if (userResult != true)
-            {
-                return $"⚠️ Command '{args}' aborted by user ⚠️";
-            }
-
-            var result = FormatProcessResult(SendCmd(args), args);
-
-            processedText = result;
-        }
-
-        return processedText;
+        eventDispatcher.Register(this);
+        this.textGenerationNotificationChannel = textGenerationNotificationChannel;
     }
 
-    private static string FormatProcessResult(string output, string command)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        var lines = output.Split(["\r\n", "\n"], StringSplitOptions.RemoveEmptyEntries);
-
-        var capture = false;
-        List<string> resultLines = [];
-
-        foreach (var line in lines)
-        {
-            if (capture && !line.Contains("exit"))
-            {
-                resultLines.Add(line);
-            }
-            else if (line.Trim().Contains(command, StringComparison.OrdinalIgnoreCase))
-            {
-                capture = true;
-            }
-        }
-
-        return string.Join(Environment.NewLine, resultLines).Trim();
+        return Task.CompletedTask;
     }
 
-    private static string SendCmd(string args)
+    public Task StopAsync(CancellationToken cancellationToken)
     {
-        using Process process = new();
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.RedirectStandardOutput = true;
-        process.StartInfo.RedirectStandardError = true;
-        process.StartInfo.RedirectStandardInput = true;
-        process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
-        process.StartInfo.FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+        return Task.CompletedTask;
+    }
 
-        process.Start();
+    public async Task Handle(CommandRequestedEvent @event)
+    {
+        try
+        {
+            var result = ProcessCommands(@event.Command);
+            await textGenerationNotificationChannel.Writer.WriteAsync(new() { Text = result });
+        }
+        catch (Exception ex)
+        {
+            await textGenerationNotificationChannel.Writer.WriteAsync(new() { Error = ex.Message, Exception = ex });
+        }
+    }
 
-        process.StandardInput.WriteLine(args);
-        process.StandardInput.WriteLine("exit");
-        process.StandardInput.Flush();
-        process.StandardInput.Close();
+    public static string ProcessCommands(string command)
+    {
+        if (string.IsNullOrWhiteSpace(command))
+        {
+            return "⚠️ Received empty command ⚠️";
+        }
 
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
+        var userResult = ConfirmationDialog.Show($"The assistant wants to send the following command, do you want to proceed?",
+            command, "Confirmation");
 
-        process.WaitForExit();
+        if (userResult != true)
+        {
+            return $"⚠️ Command '{command}' aborted by user ⚠️";
+        }
 
-        return output + Environment.NewLine + error;
+        var commandResult = CommandSenderService.SendCmd(command);
+        return CommandSenderService.FormatProcessResult(commandResult, command);
     }
 }

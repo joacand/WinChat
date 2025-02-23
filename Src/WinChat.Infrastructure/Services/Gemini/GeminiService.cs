@@ -3,37 +3,39 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using WinChat.Infrastructure.Repository;
-using WinChat.Infrastructure.Services.Contracts;
+using WinChat.Infrastructure.Services.Gemini.Contracts;
 
 namespace WinChat.Infrastructure.Services.Gemini;
-
-internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGenerateTextService
+internal sealed class GeminiService(IServiceScopeFactory scopeFactory) : IGeminiService, IApiTokenConfiguration
 {
+    private readonly IServiceScopeFactory scopeFactory = scopeFactory;
+
     private static readonly HttpClient _httpClient = new()
     {
         BaseAddress = new Uri("https://generativelanguage.googleapis.com/"),
         DefaultRequestHeaders =
-        {
-            Accept = { new MediaTypeWithQualityHeaderValue("application/json") }
-        }
+    {
+        Accept = { new MediaTypeWithQualityHeaderValue("application/json") }
+    }
     };
-
     private string ApiKey = string.Empty;
     private const string Model = "gemini-2.0-flash";
     private static string GenerateContentEndpoint(string apiKey) => $"v1beta/models/{Model}:generateContent?key={apiKey}";
 
-    public async Task<TextGenerationResponse> GenerateText(TextGenerationRequest textGenerationRequest)
+    public async Task<TextGenerationResponse> GenerateText(TextGenerationRequest textGenerationRequest, CancellationToken cancellationToken)
     {
         var address = GenerateContentEndpoint(
             await GetApiKey() ?? throw new Exception("No API key specified"));
 
+        var jsonContent = JsonSerializer.Serialize(
+                textGenerationRequest, Constants.DefaultSerializerOptions);
         var request = new HttpRequestMessage(HttpMethod.Post, address)
         {
-            Content = new StringContent(JsonSerializer.Serialize(
-                textGenerationRequest, Constants.DefaultSerializerOptions), Encoding.UTF8, "application/json")
+            Content = new StringContent(jsonContent, Encoding.UTF8, "application/json")
         };
 
-        var response = await _httpClient.SendAsync(request);
+        var response = await _httpClient.SendAsync(request, cancellationToken);
+        var r = await response.Content.ReadAsStringAsync();
         response.EnsureSuccessStatusCode();
         var textGenerationResponse = await Deserialize<TextGenerationResponse>(response);
 

@@ -27,13 +27,14 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.1">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.1" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.1" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="9.3.0-preview.1.25114.11" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.2" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.2" />
   </ItemGroup>
 
   <ItemGroup>

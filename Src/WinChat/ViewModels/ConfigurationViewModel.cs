@@ -7,7 +7,7 @@ using WinChat.Infrastructure.Services;
 namespace WinChat.ViewModels;
 
 internal partial class ConfigurationViewModel(
-    IGenerateTextService generateTextService,
+    IApiTokenConfiguration apiTokenConfiguration,
     AppDbContext appDbContext,
     EventDispatcher eventDispatcher) : ObservableObject
 {
@@ -22,7 +22,7 @@ internal partial class ConfigurationViewModel(
             return;
         }
 
-        await generateTextService.SetApiToken(ApiToken);
+        await apiTokenConfiguration.SetApiToken(ApiToken);
     }
 
     [RelayCommand]

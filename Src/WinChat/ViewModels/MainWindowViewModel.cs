@@ -28,7 +28,7 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
     private string _userMessage = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<ChatMessage> _chatMessages = [];
+    private ObservableCollection<ChatMessageEntry> _chatMessages = [];
 
     public event Action? NewMessageAdded;
 
@@ -107,20 +107,20 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             if (string.IsNullOrWhiteSpace(message?.Text)) { continue; }
             message.Text = message.Text.Trim();
             _soundService.PlayNotification();
-            var messageWithoutCommand = SearchForCommands(message.Text);
+
             await Application.Current.Dispatcher.BeginInvoke(() =>
             {
-                ChatMessages.Add(new ChatMessage
+                ChatMessages.Add(new ChatMessageEntry
                 {
                     Role = "Assistant",
-                    Content = messageWithoutCommand
+                    Content = message.Text
                 });
                 NewMessageAdded?.Invoke();
             });
-            _appDbContext.ChatMessages.Add(new ChatMessage
+            _appDbContext.ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "Assistant",
-                Content = messageWithoutCommand
+                Content = message.Text
             });
             await _appDbContext.SaveChangesAsync();
         }
@@ -130,28 +130,13 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
     {
         await Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            ChatMessages.Add(new ChatMessage
+            ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "Assistant",
                 Content = $"{message.Error} {message.Exception}"
             });
             NewMessageAdded?.Invoke();
         });
-    }
-
-    private string SearchForCommands(string text)
-    {
-        try
-        {
-            var modifiedText = _colorSettings.ProcessColorCommands(text);
-            modifiedText = CommandLineService.ProcessCommands(modifiedText);
-            return modifiedText;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to apply a command");
-            return text;
-        }
     }
 
     [RelayCommand]
@@ -165,16 +150,9 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
         var message = UserMessage;
         UserMessage = string.Empty;
 
-        _appDbContext.ChatMessages.Add(new ChatMessage
-        {
-            Role = "User",
-            Content = message
-        });
-        await _appDbContext.SaveChangesAsync();
-
         await Application.Current.Dispatcher.BeginInvoke(() =>
         {
-            ChatMessages.Add(new ChatMessage
+            ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "User",
                 Content = message
@@ -187,5 +165,12 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             Prompt = message,
             SystemPrompt = Constants.UserInputSystemPrompt
         });
+
+        _appDbContext.ChatMessages.Add(new ChatMessageEntry
+        {
+            Role = "User",
+            Content = message
+        });
+        await _appDbContext.SaveChangesAsync();
     }
 }

@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 using System.Threading.Channels;
 using WinChat.Infrastructure.Models;
 using WinChat.Infrastructure.Repository;
-using WinChat.Infrastructure.Services.Contracts;
+using WinChat.Infrastructure.Services.Tools;
 
 namespace WinChat.Infrastructure.Services;
 
 internal sealed class AiPromptService(
-    IGenerateTextService generateTextService,
+    IChatClient chatClient,
     IServiceScopeFactory scopeFactory,
     Channel<TextGenerationNotification> textGenerationNotificationChannel,
     Channel<RequestTextGeneration> textGenerationRequestChannel,
@@ -49,6 +50,7 @@ internal sealed class AiPromptService(
     {
         try
         {
+            using var scope = scopeFactory.CreateScope();
 
             if (string.IsNullOrWhiteSpace(prompt))
             {
@@ -58,31 +60,41 @@ internal sealed class AiPromptService(
 
             var chatHistory = GetChatHistorySample();
 
-            var textGenerationRequest = new TextGenerationRequest
-            {
-                Contents = new Contents
-                {
-                    Parts = new Parts
-                    {
-                        Text = CreateFullPrompt(prompt, chatHistory)
-                    }
-                }
-            };
+            var messages = new List<ChatMessage>();
+            AddChatHistory(messages, chatHistory);
+
             if (!string.IsNullOrWhiteSpace(systemPrompt))
             {
-                textGenerationRequest.SystemInstruction = new SystemInstruction
+                messages.Add(new()
                 {
-                    Parts = new Parts
-                    {
-                        Text = systemPrompt
-                    }
-                };
+                    Role = ChatRole.System,
+                    Text = systemPrompt
+                });
             }
 
-            TextGenerationResponse? textGenerationResponse = null;
+            messages.Add(
+                new()
+                {
+                    Role = ChatRole.User,
+                    Text = CreateFullPrompt(prompt)
+                });
+
+            ChatOptions chatOptions = new()
+            {
+                Tools =
+                [
+                    scope.ServiceProvider.GetRequiredService<BackgroundColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<ForegroundColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<UserChatColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<AssistantColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<CommandLineTool>(),
+                ]
+            };
+
+            ChatResponse? chatResponse = null;
             try
             {
-                textGenerationResponse = await generateTextService.GenerateText(textGenerationRequest);
+                chatResponse = await chatClient.GetResponseAsync(messages, chatOptions);
             }
             catch (Exception ex)
             {
@@ -90,10 +102,28 @@ internal sealed class AiPromptService(
                 return;
             }
 
-            var parts = textGenerationResponse?.Candidates?.FirstOrDefault()?.Content?.Parts;
-            if (parts != null && parts.Count > 0)
+            if (chatResponse.Message.Contents.Count > 0)
             {
-                var result = string.Join(Environment.NewLine, parts.Select(x => x.Text));
+                List<string> response = [];
+                foreach (var content in chatResponse.Message.Contents)
+                {
+                    if (content is FunctionCallContent functionCallContent)
+                    {
+                        foreach (var tool in chatOptions.Tools)
+                        {
+                            if (tool.Name == functionCallContent.Name && tool is AIFunction function)
+                            {
+                                await function.InvokeAsync(functionCallContent.Arguments, CancellationToken.None);
+                            }
+                        }
+                    }
+                    if (content is TextContent textContent)
+                    {
+                        response.Add(textContent.Text);
+                    }
+                }
+
+                var result = string.Join(Environment.NewLine, response);
                 await textGenerationNotificationChannel.Writer.WriteAsync(new() { Text = result });
             }
             else
@@ -105,6 +135,20 @@ internal sealed class AiPromptService(
         {
             logger.LogError(ex, "Failed to get text generation response");
             await textGenerationNotificationChannel.Writer.WriteAsync(new() { Error = "Failed to get text generation response", Exception = ex });
+        }
+    }
+
+    private static void AddChatHistory(List<ChatMessage> messages, List<string> chatHistory)
+    {
+        var deserialized = chatHistory.Select(x => JsonSerializer.Deserialize<ChatMessageContent>(x, Constants.DefaultSerializerOptions));
+        foreach (var entry in deserialized)
+        {
+            messages.Add(new()
+            {
+                Role = entry.Role == "Assistant" ? ChatRole.Assistant : ChatRole.User,
+                Text = $"{entry.TimeStamp:yyyy-MM-dd HH:mm:ss}: {entry.Content}",
+                AuthorName = entry.Role
+            });
         }
     }
 
@@ -141,7 +185,7 @@ internal sealed class AiPromptService(
         olderCandidates.Reverse();
 
         var gap = 1.0;
-        var sampledOlder = new List<ChatMessage>();
+        var sampledOlder = new List<ChatMessageEntry>();
         for (var i = 0; i < olderCandidates.Count;)
         {
             sampledOlder.Add(olderCandidates[i]);
@@ -157,8 +201,8 @@ internal sealed class AiPromptService(
         return finalChatHistory;
     }
 
-    private static string CreateFullPrompt(string prompt, List<string> chatHistory) =>
-        Constants.CommandsPrompt + Environment.NewLine + string.Join(Environment.NewLine, chatHistory) + Environment.NewLine + $"New user message: {prompt}";
+    private static string CreateFullPrompt(string prompt) =>
+        Constants.CommandsPrompt + Environment.NewLine + Environment.NewLine + $"New user message: {prompt}";
 
     private string FormatChatMessage(ChatMessageContent message, int _) => JsonSerializer.Serialize(message, Constants.DefaultSerializerOptions);
 }
