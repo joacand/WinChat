@@ -45,6 +45,7 @@ public partial class App : Application
         var functionCallChannel = Channel.CreateUnbounded<FunctionCallContent>();
         services.AddSingleton(functionCallChannel);
         services.AddSingleton(_configuration);
+        services.AddHostedService<CommandLineService>();
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<ConfigurationViewModel>();

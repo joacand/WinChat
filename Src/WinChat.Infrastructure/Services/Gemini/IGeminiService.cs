@@ -2,7 +2,7 @@
 
 namespace WinChat.Infrastructure.Services.Gemini;
 
-public interface IGeminiService
+internal interface IGeminiService
 {
     Task<TextGenerationResponse> GenerateText(TextGenerationRequest textGenerationRequest, CancellationToken cancellationToken);
 }

@@ -266,10 +266,7 @@ namespace WinChat.Infrastructure.Services.Gemini
                                 {
                                    Description = (string)v.Value
                                 }),
-                                Required =
-                                [
-                                    "rgbColor" // TODO FIX
-                                ]
+                                Required = t.AdditionalProperties.Keys.ToList()
                             }
                         }
                     ]

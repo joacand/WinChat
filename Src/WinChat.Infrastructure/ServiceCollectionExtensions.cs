@@ -38,6 +38,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ForegroundColorSelectionTool>();
         services.AddTransient<UserChatColorSelectionTool>();
         services.AddTransient<AssistantColorSelectionTool>();
+        services.AddTransient<CommandLineTool>();
         return services;
     }
 }

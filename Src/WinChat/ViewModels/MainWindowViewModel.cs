@@ -107,20 +107,20 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             if (string.IsNullOrWhiteSpace(message?.Text)) { continue; }
             message.Text = message.Text.Trim();
             _soundService.PlayNotification();
-            var messageWithoutCommand = SearchForCommands(message.Text);
+
             await Application.Current.Dispatcher.BeginInvoke(() =>
             {
                 ChatMessages.Add(new ChatMessageEntry
                 {
                     Role = "Assistant",
-                    Content = messageWithoutCommand
+                    Content = message.Text
                 });
                 NewMessageAdded?.Invoke();
             });
             _appDbContext.ChatMessages.Add(new ChatMessageEntry
             {
                 Role = "Assistant",
-                Content = messageWithoutCommand
+                Content = message.Text
             });
             await _appDbContext.SaveChangesAsync();
         }
@@ -137,20 +137,6 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
             });
             NewMessageAdded?.Invoke();
         });
-    }
-
-    private string SearchForCommands(string text)
-    {
-        try
-        {
-            var modifiedText = CommandLineService.ProcessCommands(text);
-            return modifiedText;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to apply a command");
-            return text;
-        }
     }
 
     [RelayCommand]

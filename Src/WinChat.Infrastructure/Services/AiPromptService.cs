@@ -87,6 +87,7 @@ internal sealed class AiPromptService(
                     scope.ServiceProvider.GetRequiredService<ForegroundColorSelectionTool>(),
                     scope.ServiceProvider.GetRequiredService<UserChatColorSelectionTool>(),
                     scope.ServiceProvider.GetRequiredService<AssistantColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<CommandLineTool>(),
                 ]
             };
 
