@@ -15,7 +15,6 @@ internal sealed class AiPromptService(
     IServiceScopeFactory scopeFactory,
     Channel<TextGenerationNotification> textGenerationNotificationChannel,
     Channel<RequestTextGeneration> textGenerationRequestChannel,
-    Channel<FunctionCallContent> functionCallChannel,
     ILogger<AiPromptService> logger) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -84,7 +83,10 @@ internal sealed class AiPromptService(
             {
                 Tools =
                 [
-                    scope.ServiceProvider.GetRequiredService<BackgroundColorSelectionTool>()
+                    scope.ServiceProvider.GetRequiredService<BackgroundColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<ForegroundColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<UserChatColorSelectionTool>(),
+                    scope.ServiceProvider.GetRequiredService<AssistantColorSelectionTool>(),
                 ]
             };
 

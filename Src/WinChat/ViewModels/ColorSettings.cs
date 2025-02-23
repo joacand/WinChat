@@ -1,12 +1,11 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using System.Windows.Media;
-using WinChat.Infrastructure;
 using WinChat.Infrastructure.Events;
 
 namespace WinChat.ViewModels;
 
-public partial class ColorSettings : ObservableObject, IEventHandler<ColorChangeRequestEvent>
+public partial class ColorSettings : ObservableObject, IEventHandler<ColorChangeRequestedEvent>
 {
     private readonly ILogger<ColorSettings> logger;
 
@@ -25,41 +24,7 @@ public partial class ColorSettings : ObservableObject, IEventHandler<ColorChange
         ForegroundColorHex = "#DDDDDD";
     }
 
-    public string ProcessColorCommands(string text)
-    {
-        var commands = new Dictionary<string, Action<string>>
-        {
-            [Constants.Commands.BackgroundColor.Name] = hex => BackgroundColorHex = hex,
-            [Constants.Commands.AssistantChatColor.Name] = hex => AssistantChatColorHex = hex,
-            [Constants.Commands.UserChatColor.Name] = hex => UserChatColorHex = hex,
-            [Constants.Commands.ForegroundColor.Name] = hex => ForegroundColorHex = hex
-        };
-
-        var processedText = text;
-
-        foreach (var (command, setColor) in commands)
-        {
-            var commandWithAffixes = $"{{{command}:";
-            if (!processedText.Contains(commandWithAffixes)) continue;
-
-            var parts = processedText.Split([commandWithAffixes], StringSplitOptions.None);
-            if (parts.Length < 2) continue;
-
-            var args = new string([.. parts[1].TakeWhile(x => x != '}')]);
-            if (args.Length != 6) continue;
-
-            setColor("#" + args);
-            processedText = processedText
-                .Replace($"{commandWithAffixes}{args}}}", string.Empty)
-                .Replace("  ", " ")
-                .Replace("\n\n", "\n"
-                .Trim());
-        }
-
-        return processedText;
-    }
-
-    public Task Handle(ColorChangeRequestEvent @event)
+    public Task Handle(ColorChangeRequestedEvent @event)
     {
         if (@event.ColorType == ColorType.ForegroundColor)
             ForegroundColorHex = @event.RgbColor;

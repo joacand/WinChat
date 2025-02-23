@@ -12,7 +12,7 @@ namespace WinChat.Infrastructure;
 
 public static class ServiceCollectionExtensions
 {
-    public static void RegisterInfrastructureServices(IServiceCollection services)
+    public static IServiceCollection RegisterInfrastructureServices(this IServiceCollection services)
     {
         var newTextGenerationNotificationChannel = Channel.CreateUnbounded<TextGenerationNotification>();
         var requestTextGenerationChannel = Channel.CreateUnbounded<RequestTextGeneration>();
@@ -28,6 +28,16 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
         services.AddSingleton<EventDispatcher>();
+        services.RegisterTools();
+        return services;
+    }
+
+    private static IServiceCollection RegisterTools(this IServiceCollection services)
+    {
         services.AddTransient<BackgroundColorSelectionTool>();
+        services.AddTransient<ForegroundColorSelectionTool>();
+        services.AddTransient<UserChatColorSelectionTool>();
+        services.AddTransient<AssistantColorSelectionTool>();
+        return services;
     }
 }

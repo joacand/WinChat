@@ -143,8 +143,7 @@ internal partial class MainWindowViewModel : ObservableObject, IEventHandler<Cha
     {
         try
         {
-            var modifiedText = _colorSettings.ProcessColorCommands(text);
-            modifiedText = CommandLineService.ProcessCommands(modifiedText);
+            var modifiedText = CommandLineService.ProcessCommands(text);
             return modifiedText;
         }
         catch (Exception ex)
