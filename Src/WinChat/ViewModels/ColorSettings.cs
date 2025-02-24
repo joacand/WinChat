@@ -2,29 +2,23 @@
 using Microsoft.Extensions.Logging;
 using System.Windows.Media;
 using WinChat.Infrastructure.Events;
+using WinChat.Infrastructure.Repository;
 
 namespace WinChat.ViewModels;
 
 public partial class ColorSettings : ObservableObject, IEventHandler<ColorChangeRequestedEvent>
 {
+    private readonly ColorSettingsRepository colorSettingsRepository;
     private readonly ILogger<ColorSettings> logger;
 
-    public ColorSettings(EventDispatcher eventDispatcher, ILogger<ColorSettings> logger)
+    public ColorSettings(EventDispatcher eventDispatcher, ColorSettingsRepository colorSettingsRepository, ILogger<ColorSettings> logger)
     {
         eventDispatcher.Register(this);
+        this.colorSettingsRepository = colorSettingsRepository;
         this.logger = logger;
-        ApplyDefaultDarkTheme();
     }
 
-    private void ApplyDefaultDarkTheme()
-    {
-        BackgroundColorHex = "#222222";
-        AssistantChatColorHex = "#333333";
-        UserChatColorHex = "#444444";
-        ForegroundColorHex = "#DDDDDD";
-    }
-
-    public Task Handle(ColorChangeRequestedEvent @event)
+    public async Task Handle(ColorChangeRequestedEvent @event)
     {
         if (@event.ColorType == ColorType.ForegroundColor)
             ForegroundColorHex = @event.RgbColor;
@@ -34,8 +28,42 @@ public partial class ColorSettings : ObservableObject, IEventHandler<ColorChange
             AssistantChatColorHex = @event.RgbColor;
         else if (@event.ColorType == ColorType.UserChatColor)
             UserChatColorHex = @event.RgbColor;
-        return Task.CompletedTask;
+
+        await SaveColorsAsync();
     }
+
+    public async Task LoadColorsAtStartup()
+    {
+        var colorSettings = await colorSettingsRepository.LoadColorSettingsAsync();
+        if (colorSettings != null)
+        {
+            ForegroundColorHex = colorSettings.ForegroundColorHex;
+            BackgroundColorHex = colorSettings.BackgroundColorHex;
+            AssistantChatColorHex = colorSettings.AssistantChatColorHex;
+            UserChatColorHex = colorSettings.UserChatColorHex;
+        }
+        else
+        {
+            ApplyDefaultDarkTheme();
+        }
+    }
+
+    private void ApplyDefaultDarkTheme()
+    {
+        ForegroundColorHex = "#DDDDDD";
+        BackgroundColorHex = "#222222";
+        AssistantChatColorHex = "#333333";
+        UserChatColorHex = "#444444";
+    }
+
+    private Task SaveColorsAsync() =>
+        colorSettingsRepository.SaveColorSettingsAsync(new()
+        {
+            ForegroundColorHex = ForegroundColorHex,
+            BackgroundColorHex = BackgroundColorHex,
+            AssistantChatColorHex = AssistantChatColorHex,
+            UserChatColorHex = UserChatColorHex
+        });
 
     [ObservableProperty]
     private Brush _foregroundColor = Brushes.Black;

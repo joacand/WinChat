@@ -4,6 +4,7 @@ using System.Threading.Channels;
 using WinChat.Infrastructure.Events;
 using WinChat.Infrastructure.Hosting;
 using WinChat.Infrastructure.Models;
+using WinChat.Infrastructure.Repository;
 using WinChat.Infrastructure.Services;
 using WinChat.Infrastructure.Services.Gemini;
 using WinChat.Infrastructure.Services.Tools;
@@ -28,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AiPromptService>();
         services.AddHostedService<InitiateConversationBackgroundService>();
         services.AddSingleton<EventDispatcher>();
+        services.AddSingleton<ColorSettingsRepository>();
         services.RegisterTools();
         return services;
     }

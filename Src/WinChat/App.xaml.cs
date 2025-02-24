@@ -46,6 +46,7 @@ public partial class App : Application
         services.AddSingleton(functionCallChannel);
         services.AddSingleton(_configuration);
         services.AddHostedService<CommandLineService>();
+        services.AddHostedService<ColorSettingsInitializer>();
         services.AddSingleton<MainWindow>();
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<ConfigurationViewModel>();
